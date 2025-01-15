@@ -60,8 +60,13 @@ end
 vim.api.nvim_create_user_command(
 	'WindowShop',
 	function()
-		require('bobTheBuilder.frameTheWindow').openTheWindow()
-		require('bobTheBuilder.frameTheWindow').drawOnTheWindow("Bob has found the window he wants")
+		local bobTheBuilder = require('bobTheBuilder')
+		-- close any existing window(s)  
+		bobTheBuilder.frameTheWindow.closeTheWindow()
+		-- open a new window and draw on it
+		bobTheBuilder.frameTheWindow.openTheWindow()
+		bobTheBuilder.frameTheWindow.drawOnTheWindow("bobTheBuilder has built a new window")
+
 	end,
 	{ desc = "Debug: test window drawing for functionality" }
 )
