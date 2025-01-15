@@ -1,74 +1,83 @@
----@class bobTheBuilder
+---@class BobTheBuilder
 local M = {}
 
--- import submodule(s)
-M.project = require("bobTheBuilder.project")
-M.canHe = require("bobTheBuilder.canHe")
-M.buildIt = require("bobTheBuilder.buildIt")
-M.yesHeCan = require("bobTheBuilder.yesHeCan")
-M.frameTheWindow = require("bobTheBuilder.frameTheWindow")
+-- potential functions
+-- project
+--	blueprint
+--		draw
+--		read
+-- canHe
+--	quote
+--	estimate
+-- buildIt
+--	window
+--		shop
+--		frame
+--		hang
+--	demo
+--	trimOut
+--	cleanup
+-- yesHeCan
 
-M.defaults = {
-	-- language toolchain options; check for path and assign if exists
-	toolchains = {
-		zig = "zig.exe",
-		clang = "clang.exe",
-		gcc = "gcc.exe",
-	},
-	-- boilerplate paths for projects; will be created and used by plugin
-	local_paths = {
-		source_dir = "./src",
-		build_dir = "./build",
-		log_dir = "./log",
-	},
-	-- user added non-project paths; used for executables, targets, etc
-	global_paths = {
-	},
-	-- project specific libraries for linking;
-	project_libs = {
-	},
-	-- system and default libraries for linking
-	sys_libs = {
-		sys_lib_dir = "",
-		sys_raylib_dir = "",
-	},
-	-- compilation targets
-	targets = {
-		windows = "windows",
-		linux_x86 = "linux_x86",
-		-- apple
-		-- android
-		-- ios
-		-- arm
+local defaults = {
+	-- top level option configures per language behavior; self extending list
+	-- TODO; hook into vim api/treesitter to fetch context
+	languages = {
+		c = {
+			-- allows for variation between operating systems
+			dev_env = {
+				windows_nt = {
+					-- language toolchain options
+					toolchains = {
+						compiler = "zig cc", -- plugin should adapt compilation behavior based on selection
+						-- lsp, linter, etc... used to include files like .clang-format
+						-- potential plugin hook for 'code action' like behavior
+						lsp = "clangd",
+						linter = nil,
+						formatter = "clang-format",
+						debugger = "codelldb",
+					},
+					-- boilerplate paths for projects; will be created and used by plugin
+					local_paths = {
+						assets_dir = "./assests",
+						source_dir = "./src",
+						lib_dir = "./lib",
+						build_dir = "./build",
+						log_dir = "./log",
+					},
+					-- user added non-project paths; used for executables, targets, etc
+					global_paths = {},
+					-- project specific libraries for linking
+					project_libraries = {},
+					-- system and default libraries for linking
+					system_libraries = {
+						--stdlib
+						--raylib
+						--etc
+					},
+					-- compilation targets
+					build_targets = {
+						windows = "windows",
+					},
+				},
+			},
+		},
 	},
 }
 
+-- expose defaults via opts for lazy
+M.opts = defaults
+
 ---@param opts table: Config options passed by user
 M.setup = function(opts)
-	opts = opts or {}
-	vim.notify("bobTheBuilder initialized with options: " .. vim.inspect(opts))
+	-- initialize configuration with default values
+	M.config = vim.deepcopy(defaults)
 
-	-- keymap(s)
-	-- ...
-
-	M.defaults = vim.tbl_deep_extend("force", M.defaults, opts)
-
-	M.frameTheWindow.openTheWindow()
-	M.frameTheWindow.drawOnTheWindow("bobTheBuilder has moved in")
+	-- if exists, merge in user options
+	if opts then
+		M.config = vim.tbl_deep_extend("force", M.config, opts)
+	end
 end
 
-vim.api.nvim_create_user_command(
-	'WindowShop',
-	function()
-		local bobTheBuilder = require('bobTheBuilder')
-		-- close any existing window(s)  
-		bobTheBuilder.frameTheWindow.closeTheWindow()
-		-- open a new window and draw on it
-		bobTheBuilder.frameTheWindow.openTheWindow()
-		bobTheBuilder.frameTheWindow.drawOnTheWindow("bobTheBuilder has built a new window")
-
-	end,
-	{ desc = "Debug: test window drawing for functionality" }
-)
 
 return M
